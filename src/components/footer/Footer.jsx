@@ -17,17 +17,17 @@ const Footer = () => {
                   <Link className="footer-link" to="/home">Home</Link>
                 </li>
                 <li>
-                  <Link className="footer-link" to="/courts">The courts</Link>
+                  <Link className="footer-link" to="/courts">Gallery</Link>
                 </li>
                 <li>
-                  <Link className="footer-link" to="/faq">FAQ</Link>
+                  <Link className="footer-link" to="/faq">Shopping</Link>
                 </li>
                 <li>
-                  <Link className="footer-link" to="/photos">Photos</Link>
+                  <Link className="footer-link" to="/photos">Markets</Link>
                 </li>
               </ul>
             </div>
-            <div className="links-column">
+            {/* <div className="links-column">
               <ul>
                 <li>
                   <Link className="footer-link" to="/about">About</Link>
@@ -36,7 +36,7 @@ const Footer = () => {
                   <Link className="footer-link" to="/webcam">Webcam</Link>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="column-wrapper">
