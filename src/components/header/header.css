@@ -1,4 +1,54 @@
+.header-container {
+  background: url(../../assets/site-header-photo.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
 .header {
+  visibility: hidden;
   width: 100%;
-  min-height: 10%;
+}
+
+.zoom-container {
+  position: absolute;
+  width: 100%;
+  top: calc(8vh + 16vw);
+}
+
+.zoom-text {
+  width: 100%;
+  font-size: 7.5vw;
+  color: lightgray;
+  animation: zoom 1.5s;
+  text-align: center;
+  overflow: hidden;
+  mix-blend-mode: lighten;
+  opacity: 60%;
+  font-weight: 800;
+}
+@keyframes zoom {
+  from {
+    transform: scale(0.3, 0.3);
+  }
+  to {
+    transform: scale(1,1);
+  }
+}
+
+.zoom-text-subheader {
+  width: 100%;
+  font-size: 4.5vw;
+  color: lightgray;
+  animation: zoom 2.8s;
+  text-align: center;
+  overflow: hidden;
+  mix-blend-mode: lighten;
+  opacity: 60%;
+  font-weight: 500;
+}
+
+@media screen and (max-width: 600px) {
+  .zoom-container {
+    top: calc(8vh + 16vw);
+  }
 }

@@ -2,19 +2,20 @@
 
 :root {
   --font-family: 'Manrope', sans-serif;
-  --background-color: #e2ffda;
-  --background-color-shade: #c7ebbe;
-  --background-color-shade-outline: #8da787;
-  --nav-background: #082c51;
-  --dark-blue-text: #09325a;
-  --link-text: #1163b5;
-  --link-text-light: #6398cd;
+  --background-color: #363635;
+  --background-color-shade: #9c9c9c;
+  --background-color-shade-outline: #666666;
+  --nav-background: #505050;
+  --dark-blue-text: #b5babe;
+  --dark-brown: #131001;
+  --link-text: #b37e2f;
+  --link-text-light: #e0a434;
   --footer-link-text-light: #73afea;
   --light-gray: #9fb4ca;
   --lighter-gray: #cbd6e3;
   --navigation: #b3c5c9;
   --navigation-hover: #5b6567;
-  --navigation-focus: #d1ef2e;
-  --scrollbar-color: #6cacd4;
-  --scrollbar-background: #285c94;
+  --navigation-focus: #dbad2c;
+  --scrollbar-color: #3a2302;
+  --scrollbar-background: #776e4e;
 }

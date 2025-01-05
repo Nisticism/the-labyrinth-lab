@@ -1,6 +1,6 @@
 .album-button-pic {
   border-radius: 20px;
-  width: 400px;
+  max-width: 400px;
   height: 400px;
   cursor: pointer;
 }

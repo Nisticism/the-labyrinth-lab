@@ -19,19 +19,19 @@ function getNavClassesHome(path, route) {
 const Menu = (props) => (
   <>
     <div className="nav-item-div">
-      <Link className={getNavClasses("/courts", props.location.pathname)} to="/courts" onClick={() => props.setToggleMenu ? props.setToggleMenu(false) : false}>Gallery</Link>
+      <Link className={getNavClasses("/gallery", props.location.pathname)} to="/gallery" onClick={() => props.setToggleMenu ? props.setToggleMenu(false) : false}>Gallery</Link>
     </div>
     <div className="nav-item-div">
-      <Link className={getNavClasses("/faq", props.location.pathname)} to="/faq" onClick={() => props.setToggleMenu ? props.setToggleMenu(false) : false}>Shopping</Link>
+      <Link className={getNavClasses("/commissions", props.location.pathname)} to="/commissions" onClick={() => props.setToggleMenu ? props.setToggleMenu(false) : false}>Commissions</Link>
     </div>
     {/* <div className="nav-item-div">
        <Link className={getNavClasses("/webcam", props.location.pathname)} to="/webcam">Webcam</Link>
     </div> */}
     <div className="nav-item-div">
-      <Link className={getNavClasses("/photos", props.location.pathname)} to="/photos" onClick={() => props.setToggleMenu ? props.setToggleMenu(false) : false}>Markets</Link>
+      <Link className={getNavClasses("/markets", props.location.pathname)} to="/markets" onClick={() => props.setToggleMenu ? props.setToggleMenu(false) : false}>Markets</Link>
     </div>
     <div className="nav-item-div">
-      <Link className={getNavClasses("/about", props.location.pathname)} to="/about" onClick={() => props.setToggleMenu ? props.setToggleMenu(false) : false}>Contact</Link>
+      <Link className={getNavClasses("/contact", props.location.pathname)} to="/contact" onClick={() => props.setToggleMenu ? props.setToggleMenu(false) : false}>Contact</Link>
     </div>
   </>
 )
