@@ -1,7 +1,10 @@
 .header-container {
+  position: relative;
   background: url(../../assets/site-header-photo.png);
   background-repeat: no-repeat;
-  background-size: contain;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
 }
 
 .header {
@@ -12,26 +15,30 @@
 .zoom-container {
   position: absolute;
   width: 100%;
-  top: calc(8vh + 16vw);
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .zoom-text {
   width: 100%;
   font-size: 7.5vw;
   color: lightgray;
-  animation: zoom 1.5s;
+  animation: zoom 0.9s ease-out;
   text-align: center;
   overflow: hidden;
   mix-blend-mode: lighten;
-  opacity: 60%;
+  opacity: 80%;
   font-weight: 800;
 }
 @keyframes zoom {
   from {
     transform: scale(0.3, 0.3);
+    opacity: 0;
   }
   to {
     transform: scale(1,1);
+    opacity: 1;
   }
 }
 
@@ -39,16 +46,10 @@
   width: 100%;
   font-size: 4.5vw;
   color: lightgray;
-  animation: zoom 2.8s;
+  animation: zoom 1.6s ease-out;
   text-align: center;
   overflow: hidden;
   mix-blend-mode: lighten;
-  opacity: 60%;
+  opacity: 80%;
   font-weight: 500;
-}
-
-@media screen and (max-width: 600px) {
-  .zoom-container {
-    top: calc(8vh + 16vw);
-  }
 }

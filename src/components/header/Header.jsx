@@ -6,7 +6,7 @@ import './header.css';
 function Header() {
   return (
     <div className="header-container">
-      <img src={ header } className="header" alt="GLP Header" id="header"/>
+      <img src={ header } className="header" alt="The Labyrinth Lab Header" id="header"/>
       <div className="zoom-container">
         <div className="zoom-text">
           The Labyrinth Lab
