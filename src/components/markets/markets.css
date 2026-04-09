@@ -1,32 +1,77 @@
-.about-text {
+.markets-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 30px 40px;
+}
+
+.markets-heading {
+  text-align: center;
+  color: var(--dark-blue-text);
+  margin-bottom: 10px;
+}
+
+.markets-subheading {
+  text-align: center;
+  color: var(--dark-blue-text);
+  margin: 10px 0;
+  padding: 0;
+}
+
+.markets-section {
+  margin: 10px 5% 20px;
+}
+
+.markets-text {
   font-size: 15px;
   font-weight: 500;
-  white-space: pre-wrap;
   color: var(--dark-blue-text);
-  margin-bottom: 24px;
   line-height: 24px;
+  margin-bottom: 12px;
+  text-align: center;
 }
 
-.about-hr {
+.markets-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px auto;
+  max-width: 400px;
+}
+
+.markets-list li {
+  color: var(--dark-blue-text);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 28px;
+  padding: 6px 16px;
+  margin-bottom: 6px;
+  background: var(--nav-background);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.markets-hr {
   width: 50%;
+  margin: 30px auto;
 }
 
-.about-section {
-  margin-top: 5px;
-  margin-bottom: 20px;
-  margin: 5px 10% 10px 10%;
-  display: flex;
-  flex-direction: column;
+.markets-etsy {
+  text-align: center;
 }
 
-.about-section-heading {
-  margin: 0px 10%;
+.markets-etsy-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 12px 32px;
+  background: var(--link-text);
+  color: white;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
 }
 
-.center-list {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin-left: 40%;
-  margin-right: 40%;
+.markets-etsy-btn:hover {
+  background: var(--link-text-light);
+  transform: translateY(-2px);
 }

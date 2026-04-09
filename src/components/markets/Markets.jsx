@@ -1,52 +1,56 @@
-import React from 'react'
+import React from 'react';
 import './markets.css';
-
 
 function Markets() {
   return (
-    <div className="text-align">
-      {/* <h2 className="about-section-heading">History</h2>
-      <div className="about-section">
+    <div className="markets-page">
+      <h2 className="markets-heading">Markets &amp; Events</h2>
 
+      <div className="markets-section">
+        <h3 className="markets-subheading">Upcoming Markets</h3>
+        <p className="markets-text">
+          There are no upcoming markets scheduled at this time. Check back soon for updates!
+        </p>
       </div>
-      <hr className="about-hr"/> */}
-      {/* <h2 className="about-section-heading">Advocacy</h2>
-      <div className="about-section">
 
+      <hr className="markets-hr" />
+
+      <div className="markets-section">
+        <h3 className="markets-subheading">Where to Find Us</h3>
+        <p className="markets-text">
+          While I don't have a fixed schedule, you can sometimes find The Labyrinth Lab at these
+          markets and events:
+        </p>
+        <ul className="markets-list">
+          <li>Shavano Park Market — San Antonio, TX</li>
+          <li>Austin Artisan Markets — Austin, TX</li>
+          <li>Garden Market</li>
+          <li>Christmas Showcase — San Antonio, TX (annual holiday event)</li>
+        </ul>
+        <p className="markets-text">
+          I occasionally participate in larger events and pop-ups as well. Follow along or reach out
+          through the contact page to stay in the loop.
+        </p>
       </div>
-      <hr /> */}
-      <h2 className="about-section-heading">Coming Soon</h2>
-      {/* <div className="about-section">
-        <span className="about-text">        Peter Seitel is the unofficial “Mayor of Green Lake Pickleball” and is passionate about nurturing the pickleball 
-        community at the Green Lake East courts.  Peter is responsible for making court reservations, ordering equipment, 
-        managing court lines, and making sure everyone is having a good time.
-        </span>
-        <span className="about-text">        Nicole Bideganeta is Peter’s “Chief of Staff” (HB) and helps Peter keep everything organized.
-        </span>
-        <span className="about-text">        Dave Kwok is the “Administrative Attache” and helps Peter with various administrative and communication tasks.
-        </span>
-        <h4>Court Ambassadors</h4>
-        <span className="about-text">        Our court ambassadors help players learn our community conventions, including pointing players to this website! They include:
-          <ul className="list-answer center-list">
-            <li>
-              Sundeep
-            </li>
-            <li>
-              Tammy
-            </li>
-            <li>
-              Chase
-            </li>
-          </ul>
-        </span>
-        <h4>This site</h4>
-        <span className="about-text">        This site is a collaboration between various members of the Green Lake pickleball community.  Hans coded and created the site, which is hosted on 
-        his <a href="https://www.github.com/nisticism/green-lake-pickleball" target="_blank" rel="noreferrer">github</a>.  Peter and Dave provided content for the site, including text and some 
-        design decisions.  Eric made some UI sketches.  Tux created the pickleball logo artwork, which can also be seen on posters around Green Lake.</span>
-      </div> */}
-      {/* <hr className="about-hr" /> */}
+
+      <hr className="markets-hr" />
+
+      <div className="markets-section markets-etsy">
+        <h3 className="markets-subheading">Shop Online</h3>
+        <p className="markets-text">
+          Can't make it to a market? Browse and purchase pieces anytime from my Etsy store.
+        </p>
+        <a
+          href="https://www.etsy.com/shop/LabyrinthLab"
+          target="_blank"
+          rel="noreferrer"
+          className="markets-etsy-btn"
+        >
+          Visit the Etsy Shop
+        </a>
+      </div>
     </div>
-  )
+  );
 }
 
-export default Markets
+export default Markets;
