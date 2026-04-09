@@ -1,7 +1,12 @@
+.home-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px 30px 40px;
+}
+
 .home-text {
   font-size: 15px;
   font-weight: 500;
-  white-space: pre-wrap;
   color: var(--dark-blue-text);
   margin-bottom: 24px;
   line-height: 24px;
@@ -9,32 +14,89 @@
 
 .home-hr {
   width: 50%;
+  margin: 30px auto;
 }
 
 .home-section {
-  margin-top: 5px;
-  margin-bottom: 20px;
-  margin: 5px 10% 10px 10%;
+  margin: 5px 5% 10px 5%;
   display: flex;
   flex-direction: column;
 }
 
 .home-section-heading {
-  margin: 0px 10%;
+  margin: 10px 5%;
 }
 
-.nyt-article-screen {
-  width: 80%;
-  margin: auto;
+.home-heroes {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 20px 0 30px;
+}
+
+.home-hero-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 450px;
+}
+
+.home-hero-img {
+  width: 100%;
+  max-height: 350px;
+  object-fit: cover;
   border-radius: 10px;
-  box-shadow: 5px 5px 5px var(--nav-background);
-  margin-bottom: 20px;
-  border: 1px solid var(--scrollbar-color);
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
 }
 
-.nyt-article-screen:hover {
-  border: 1px solid var(--scrollbar-background);
-  filter: sepia(100%) saturate(200%) brightness(95%) hue-rotate(140deg);
-  cursor: pointer;
-  transition: 0.25s;
+.home-hero-caption {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark-blue-text);
+  font-style: italic;
+}
+
+.home-links {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 20px 5%;
+}
+
+.home-link-card {
+  background: var(--nav-background);
+  border-radius: 10px;
+  padding: 20px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.home-link-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.home-link-card h3 {
+  color: var(--link-text-light);
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.home-link-card span {
+  color: var(--dark-blue-text);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@media screen and (max-width: 650px) {
+  .home-links {
+    grid-template-columns: 1fr;
+  }
+
+  .home-heroes {
+    flex-direction: column;
+    align-items: center;
+  }
 }
