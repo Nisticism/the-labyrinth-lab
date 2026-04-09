@@ -1,20 +1,15 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "The Labyrinth Lab",
+  "name": "The Labyrinth Lab - Custom Woodworking",
   "icons": [
     {
-      "src": "gl_icon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "gl_icon.png",
-      "type": "image/png",
+      "src": "favicon.jpg",
+      "type": "image/jpeg",
       "sizes": "192x192"
     },
     {
-      "src": "gl_icon.png",
-      "type": "image/png",
+      "src": "favicon.jpg",
+      "type": "image/jpeg",
       "sizes": "512x512"
     }
   ],

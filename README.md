@@ -12,7 +12,7 @@ But if you're having problems, try this:
 2.)  Run `npm run deploy`
 3.)  Make sure the gh-pages branch has been updated.
 4.)  While in the repository, go to settings, then pages, make sure it's set to the gh-pages branch
-5.)  Make sure the url is greenlakepickleball.
+5.)  Make sure the url is the-ll.com.
 6.)  Make sure there is a CNAME file.
 7.)  Check the actions tab.
 

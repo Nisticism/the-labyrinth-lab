@@ -1,16 +1,8 @@
-export { default as Footer } from './footer/Footer';
 export { default as Navigation } from './navigation/Navigation';
-export { default as FAQ } from './faq/FAQ'; 
 export { default as Home } from './home/Home';
 export { default as Header } from './header/Header';
-export { default as Courts } from './courts/Courts';
-export { default as About } from './about/About';
-export { default as Webcam } from './webcam/Webcam';
 export { default as Gallery } from './gallery/Gallery';
 export { default as Markets } from './markets/Markets';
 export { default as Commissions } from './commissions/Commissions';
-// export { default as Photos } from './photos/Photos';
 export { default as Contact } from './contact/Contact';
-export { default as Album } from './album/Album';
-export { default as AlbumButton } from './album_button/AlbumButton';
 export { default as NotFound } from './notfound/NotFound';
