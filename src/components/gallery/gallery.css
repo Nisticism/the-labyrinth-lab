@@ -1,41 +1,17 @@
-.photo {
-  width: 50%;
+.gallery-page {
+  padding: 20px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.photos {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.caption {
-  display: flex;
-  justify-content: center;
-  margin: 10px auto 20px auto;
-  max-width: 350px;
-  font-size: 15px;
-  line-height: 24px;
-  font-weight: 500;
+.gallery-heading {
+  text-align: center;
   color: var(--dark-blue-text);
+  margin-bottom: 10px;
 }
 
-.photos hr {
-  margin-bottom: 25px;
-}
-
-.album-titles {
-  font-size: 20px;
-  margin: 10px;
-  font-weight: 800;
-  color: var(--dark-blue-text);
-}
-
-.photos-wrapper {
-  margin: 10px;
-}
-
-.hr-photos {
-  margin: 10px;
+.gallery-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }

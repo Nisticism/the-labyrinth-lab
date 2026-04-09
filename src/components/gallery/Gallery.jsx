@@ -1,28 +1,23 @@
-import React from 'react'
-import { AlbumButton } from '..';
+import React from 'react';
+import Carousel from '../carousel/Carousel';
+import galleryData from '../../helpers/galleryData';
 import './gallery.css';
 
 function Gallery() {
-  const ButtonData = {
-    tm: 
-    {title: "Thomas Moralez Photos", url: "/gallery/thomasmoralez", src: "images/tm/bloodwood-pen.jpg"},
-    // nyt: 
-    // {title: "General", url: "/photos/nyt", src: "images/general/Pickleball_01.JPG"}
-  }
   return (
-    <div className="text-align photos-wrapper">
-      <div>
-        <span className="album-titles">Albums</span>
-      </div>
-      <div className="hr-photos">
-        <hr/>
-      </div>
-      <div className="gallery">
-        <AlbumButton buttonData={ButtonData.tm}/>
-        {/* <AlbumButton buttonData={ButtonData.nyt}/> */}
+    <div className="gallery-page">
+      <h2 className="gallery-heading">Gallery</h2>
+      <div className="gallery-categories">
+        {galleryData.map((category) => (
+          <Carousel
+            key={category.id}
+            images={category.images}
+            title={category.title}
+          />
+        ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default Gallery
+export default Gallery;
