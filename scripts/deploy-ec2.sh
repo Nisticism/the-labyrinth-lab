@@ -3,11 +3,20 @@ set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="${REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+
+if [[ -f "$REPO_DIR/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$REPO_DIR/.env"
+  set +a
+fi
+
 REMOTE="${REMOTE:-origin}"
 BRANCH="${BRANCH:-master}"
 PORT="${PORT:-4000}"
 APP_SERVICE_NAME="${APP_SERVICE_NAME:-the-labyrinth-lab}"
 APP_USER="${APP_USER:-${USER:-ubuntu}}"
+SITE_DOMAIN="${SITE_DOMAIN:-${APP_DOMAIN:-the-ll.com}}"
 NGINX_SITE_CONF="${NGINX_SITE_CONF:-/etc/nginx/conf.d/the-ll.conf}"
 NGINX_DEFAULT_CONF="${NGINX_DEFAULT_CONF:-}"
 
@@ -141,11 +150,18 @@ action systemctl enable --now ${APP_SERVICE_NAME}
 action systemctl restart ${APP_SERVICE_NAME}
 
 log "Writing nginx reverse proxy config"
-cat > /tmp/the-ll-nginx.conf <<EOF
+CERT_PATH="/etc/letsencrypt/live/${SITE_DOMAIN}/fullchain.pem"
+KEY_PATH="/etc/letsencrypt/live/${SITE_DOMAIN}/privkey.pem"
+if [[ -f "$CERT_PATH" ]] && [[ -f "$KEY_PATH" ]]; then
+  SSL_BLOCK=$(cat <<EOF
+
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name _;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ${SITE_DOMAIN} www.${SITE_DOMAIN};
+
+    ssl_certificate ${CERT_PATH};
+    ssl_certificate_key ${KEY_PATH};
 
     root ${REPO_DIR}/build;
     index index.html;
@@ -188,6 +204,63 @@ server {
     }
 }
 EOF
+)
+else
+  SSL_BLOCK=""
+fi
+
+cat > /tmp/the-ll-nginx.conf <<EOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name ${SITE_DOMAIN} www.${SITE_DOMAIN};
+
+    if (\$host = "${SITE_DOMAIN}") {
+        return 301 https://\$host\$request_uri;
+    }
+
+    root ${REPO_DIR}/build;
+    index index.html;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:${PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location /images/ {
+        proxy_pass http://127.0.0.1:${PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location /faqs/ {
+        proxy_pass http://127.0.0.1:${PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location /static/ {
+        alias ${REPO_DIR}/build/static/;
+        expires 1y;
+        access_log off;
+    }
+
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+}
+${SSL_BLOCK}
+EOF
 
 action install -d /etc/nginx/conf.d
 
@@ -208,10 +281,10 @@ action systemctl enable --now nginx
 action systemctl reload nginx
 
 log "Deployment complete"
-PUBLIC_HOST="$(curl -fsSL --max-time 5 http://169.254.169.254/latest/meta-data/public-hostname 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo '')"
+PUBLIC_HOST="${SITE_DOMAIN:-$(curl -fsSL --max-time 5 http://169.254.169.254/latest/meta-data/public-hostname 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo '')}"
 if [[ -n "$PUBLIC_HOST" ]]; then
   echo "App: http://localhost:${PORT}"
-  echo "Public site: http://${PUBLIC_HOST}/"
+  echo "Public site: https://${PUBLIC_HOST}/"
 else
   echo "App: http://localhost:${PORT}"
   echo "Public site: set this to your EC2 public DNS or ALB address."
