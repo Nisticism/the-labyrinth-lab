@@ -98,16 +98,24 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Name, email, and message are required.' });
   }
 
+  // Prefer SMTP (e.g. SES) when configured, but never let an SMTP problem take
+  // the form down: if the SMTP send fails (misconfigured, provider down, or a
+  // domain still pending verification), fall back to FormSubmit. Only return an
+  // error if both paths fail.
   try {
     const sentViaSmtp = await sendWithSmtp({ name, email, message });
     if (sentViaSmtp) {
       return res.json({ ok: true, method: 'smtp' });
     }
+  } catch (smtpError) {
+    console.error('[server] SMTP send failed, falling back to FormSubmit:', smtpError.message);
+  }
 
+  try {
     await sendWithFormSubmit({ name, email, message });
     return res.json({ ok: true, method: 'formsubmit' });
   } catch (error) {
-    console.error('[server] contact send failed:', error);
+    console.error('[server] contact send failed (smtp + formsubmit):', error);
     return res.status(500).json({
       error: 'Unable to send your message right now. Please try again later.',
     });
