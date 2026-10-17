@@ -9,7 +9,19 @@ PORT="${PORT:-4000}"
 APP_SERVICE_NAME="${APP_SERVICE_NAME:-the-labyrinth-lab}"
 APP_USER="${APP_USER:-${USER:-ubuntu}}"
 NGINX_SITE_CONF="${NGINX_SITE_CONF:-/etc/nginx/conf.d/the-ll.conf}"
-NGINX_DEFAULT_CONF="${NGINX_DEFAULT_CONF:-/etc/nginx/conf.d/default.conf}"
+NGINX_DEFAULT_CONF="${NGINX_DEFAULT_CONF:-}"
+
+if [[ -z "$NGINX_DEFAULT_CONF" ]]; then
+  for candidate in \
+    /etc/nginx/conf.d/default.conf \
+    /etc/nginx/sites-enabled/default \
+    /etc/nginx/sites-available/default; do
+    if [[ -e "$candidate" ]]; then
+      NGINX_DEFAULT_CONF="$candidate"
+      break
+    fi
+  done
+fi
 
 if [[ "$(id -u)" -ne 0 ]]; then
   SUDO="sudo"
@@ -180,8 +192,14 @@ EOF
 action install -d /etc/nginx/conf.d
 
 action cp /tmp/the-ll-nginx.conf "$NGINX_SITE_CONF"
-if [[ -f "$NGINX_DEFAULT_CONF" ]]; then
-  action rm -f "$NGINX_DEFAULT_CONF"
+if [[ -n "$NGINX_DEFAULT_CONF" ]] && [[ -e "$NGINX_DEFAULT_CONF" ]]; then
+  if [[ -L "$NGINX_DEFAULT_CONF" ]] || [[ -f "$NGINX_DEFAULT_CONF" ]]; then
+    action rm -f "$NGINX_DEFAULT_CONF"
+  fi
+fi
+
+if [[ -L /etc/nginx/sites-enabled/default ]]; then
+  action rm -f /etc/nginx/sites-enabled/default
 fi
 
 action nginx -t
@@ -190,5 +208,11 @@ action systemctl enable --now nginx
 action systemctl reload nginx
 
 log "Deployment complete"
-echo "App: http://localhost:${PORT}"
-echo "Public site: http://$(curl -s http://169.254.169.254/latest/meta-data/public-hostname 2>/dev/null || echo 'your-ec2-hostname')/"
+PUBLIC_HOST="$(curl -fsSL --max-time 5 http://169.254.169.254/latest/meta-data/public-hostname 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo '')"
+if [[ -n "$PUBLIC_HOST" ]]; then
+  echo "App: http://localhost:${PORT}"
+  echo "Public site: http://${PUBLIC_HOST}/"
+else
+  echo "App: http://localhost:${PORT}"
+  echo "Public site: set this to your EC2 public DNS or ALB address."
+fi
