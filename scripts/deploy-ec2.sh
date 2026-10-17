@@ -94,7 +94,19 @@ cd "$REPO_DIR"
 log "Pulling latest code"
 git fetch --all --tags
 git checkout "$BRANCH"
-git pull --ff-only "$REMOTE" "$BRANCH"
+if ! git pull --ff-only "$REMOTE" "$BRANCH"; then
+  echo "Pull was blocked (likely a previously-untracked file now tracked in git)."
+  BACKUP_DIR="$REPO_DIR/.deploy-backups/$(date +%Y%m%d-%H%M%S)"
+  mkdir -p "$BACKUP_DIR"
+  # data/gallery-config.json used to be gitignored; a stale untracked copy on
+  # the server blocks the merge. Preserve it, then let the tracked version win.
+  if [[ -f "$REPO_DIR/data/gallery-config.json" ]]; then
+    echo "Backing up existing data/gallery-config.json to $BACKUP_DIR/"
+    cp -a "$REPO_DIR/data/gallery-config.json" "$BACKUP_DIR/" || true
+    rm -f "$REPO_DIR/data/gallery-config.json"
+  fi
+  git pull --ff-only "$REMOTE" "$BRANCH"
+fi
 
 log "Syncing persisted gallery data"
 if [[ -n "${GALLERY_SYNC_SOURCE:-}" || -n "${GALLERY_SYNC_DATA_DIR:-}" || -n "${GALLERY_SYNC_IMAGES_DIR:-}" ]]; then
