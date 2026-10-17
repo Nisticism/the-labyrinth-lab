@@ -197,44 +197,19 @@ else
 fi
 
 APP_LOCATIONS=$(cat <<EOF
-    root ${REPO_DIR}/build;
-    index index.html;
+    # Allow admin portal image uploads (multer) through nginx.
+    client_max_body_size 25m;
 
-    location /api/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /images/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /faqs/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /static/ {
-        alias ${REPO_DIR}/build/static/;
-        expires 1y;
-        access_log off;
-    }
-
+    # nginx terminates TLS and proxies everything to the Node app, which serves
+    # the built React app, images, and the API. This avoids filesystem
+    # permission issues when the build lives under a user home directory.
     location / {
-        try_files \$uri \$uri/ /index.html;
+        proxy_pass http://127.0.0.1:${PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 EOF
 )
