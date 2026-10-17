@@ -57,8 +57,9 @@ After changing any `REACT_APP_*` variable you must restart `npm start`.
 
 ### Data and uploads
 
-- Gallery config lives at `data/gallery-config.json` (gitignored). The admin
-  portal reads/writes this file directly via the API.
+- Gallery config lives at `data/gallery-config.json` and is versioned in Git so
+  ordering changes are included in the normal deploy flow. The admin portal
+  reads/writes this file directly via the API.
 - Uploaded images go to `public/images/<categoryId>/` and are served
   statically. Deleting an image via the admin portal removes both the file
   and its entry from the config.
@@ -82,16 +83,15 @@ Node.js host (Railway, Render, Fly.io, a VPS, etc.):
 
 1. Set environment variables on the host (`JWT_SECRET`,
    `ADMIN_PASSWORD_HASH`, `ADMIN_PATH`, `REACT_APP_ADMIN_PATH`, `PORT`).
-2. If your gallery config and uploads live outside the Git repo (because
-   `data/` and `public/images/` are gitignored), set `GALLERY_SYNC_SOURCE`,
-   `GALLERY_SYNC_DATA_DIR`, and/or `GALLERY_SYNC_IMAGES_DIR` so the deploy
-   script can sync the latest persisted gallery data before rebuilding.
+2. Gallery order and config are now versioned in `data/gallery-config.json`.
+   Reorder via the admin portal, then commit the updated JSON to git before
+   deploying. The deploy script does not need to run a gallery sync unless you
+   deliberately configure an external source directory.
 3. Build command: `npm install && npm run build`
 4. Start command: `node server/index.js`
-5. **Persistent storage**: most platforms wipe the filesystem on each
-   deploy. Mount a persistent disk and point both `data/` and
-   `public/images/` at it (or use object storage like S3 with a small
-   adapter) so uploads and config edits survive redeploys.
+5. **Persistent storage**: if you expect uploaded images to be managed outside
+   Git, mount a persistent disk and point `public/images/` at it; otherwise,
+   commit the gallery JSON with the rest of the app and deploy normally.
 
 ---
 

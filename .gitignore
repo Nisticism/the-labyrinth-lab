@@ -21,9 +21,6 @@
 .env.test.local
 .env.production.local
 
-# admin portal persistent data (gallery-config.json edited via /api/admin)
-/data
-
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
