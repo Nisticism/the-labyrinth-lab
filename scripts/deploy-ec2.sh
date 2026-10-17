@@ -249,9 +249,8 @@ server {
 }
 
 server {
-    listen 443 ssl default_server;
-    listen [::]:443 ssl default_server;
-    http2 on;
+    listen 443 ssl http2 default_server;
+    listen [::]:443 ssl http2 default_server;
     server_name ${SITE_DOMAIN} www.${SITE_DOMAIN};
 
     ssl_certificate ${CERT_PATH};
