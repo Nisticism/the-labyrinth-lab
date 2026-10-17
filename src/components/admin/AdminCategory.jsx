@@ -11,7 +11,7 @@ import { adminApi } from './adminApi';
 
 const API_BASE = (process.env.REACT_APP_API_BASE || '').replace(/\/$/, '');
 
-function AdminCategory({ category, isOpen, onToggle, onChange, onReload }) {
+function AdminCategory({ category, isOpen, onToggle, onChange, onReload, dragHandleProps }) {
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const fileInputRef = useRef(null);
@@ -61,11 +61,23 @@ function AdminCategory({ category, isOpen, onToggle, onChange, onReload }) {
 
   return (
     <section className={`admin-cat ${isOpen ? 'admin-cat--open' : ''}`}>
-      <button type="button" className="admin-cat__header" onClick={onToggle}>
-        <span className="admin-cat__title">{category.title}</span>
-        <span className="admin-cat__meta">{category.images.length} images</span>
-        <span className="admin-cat__chevron" aria-hidden>{isOpen ? '▾' : '▸'}</span>
-      </button>
+      <div className="admin-cat__headrow">
+        <span
+          className="admin-cat__drag"
+          role="button"
+          tabIndex={0}
+          aria-label="Drag to reorder category"
+          title="Drag to reorder"
+          {...(dragHandleProps || {})}
+        >
+          ⠿
+        </span>
+        <button type="button" className="admin-cat__header" onClick={onToggle}>
+          <span className="admin-cat__title">{category.title}</span>
+          <span className="admin-cat__meta">{category.images.length} images</span>
+          <span className="admin-cat__chevron" aria-hidden>{isOpen ? '▾' : '▸'}</span>
+        </button>
+      </div>
 
       {isOpen && (
         <div className="admin-cat__body">

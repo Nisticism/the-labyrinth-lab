@@ -19,7 +19,7 @@ function AdminImageCard({ id, src, index, onDelete }) {
         {...attributes}
         {...listeners}
       >
-        <img src={src} alt="" loading="lazy" />
+        <img src={src} alt="" loading="lazy" decoding="async" />
       </button>
       <button
         type="button"
