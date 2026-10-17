@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-REPO_DIR="${REPO_DIR:-/home/ec2-user/the-labyrinth-lab}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="${REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 REMOTE="${REMOTE:-origin}"
 BRANCH="${BRANCH:-master}"
 PORT="${PORT:-4000}"
 APP_SERVICE_NAME="${APP_SERVICE_NAME:-the-labyrinth-lab}"
+APP_USER="${APP_USER:-${USER:-ubuntu}}"
 NGINX_SITE_CONF="${NGINX_SITE_CONF:-/etc/nginx/conf.d/the-ll.conf}"
 NGINX_DEFAULT_CONF="${NGINX_DEFAULT_CONF:-/etc/nginx/conf.d/default.conf}"
 
@@ -90,8 +92,8 @@ Environment=PORT=${PORT}
 ExecStart=/usr/bin/node server/index.js
 Restart=always
 RestartSec=5
-User=${USER:-ec2-user}
-Group=${USER:-ec2-user}
+User=${APP_USER}
+Group=${APP_USER}
 StandardOutput=journal
 StandardError=journal
 
