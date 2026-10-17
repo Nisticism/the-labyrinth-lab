@@ -23,6 +23,17 @@ async function sendWithSmtp({ name, email, message }) {
     return false;
   }
 
+  // The "from" address must be a sender your provider accepts. For Amazon SES
+  // this must be a verified identity (domain or email), and it is NOT the SMTP
+  // username (which is an access-key-style credential). Allow it to be set
+  // explicitly, falling back to the SMTP user only when that looks like an
+  // email address (e.g. Gmail SMTP), then to the contact address.
+  const fromAddress =
+    process.env.SMTP_FROM ||
+    process.env.MAIL_FROM ||
+    process.env.EMAIL_FROM ||
+    (user.includes('@') ? user : DEFAULT_CONTACT_EMAIL);
+
   const transporter = nodemailer.createTransport({
     host,
     port,
@@ -31,7 +42,7 @@ async function sendWithSmtp({ name, email, message }) {
   });
 
   await transporter.sendMail({
-    from: `"${name}" <${user}>`,
+    from: `"${name}" <${fromAddress}>`,
     to: DEFAULT_CONTACT_EMAIL,
     replyTo: email,
     subject: `New message from the-ll.com from ${name}`,
