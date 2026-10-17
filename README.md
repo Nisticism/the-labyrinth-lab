@@ -82,9 +82,13 @@ Node.js host (Railway, Render, Fly.io, a VPS, etc.):
 
 1. Set environment variables on the host (`JWT_SECRET`,
    `ADMIN_PASSWORD_HASH`, `ADMIN_PATH`, `REACT_APP_ADMIN_PATH`, `PORT`).
-2. Build command: `npm install && npm run build`
-3. Start command: `node server/index.js`
-4. **Persistent storage**: most platforms wipe the filesystem on each
+2. If your gallery config and uploads live outside the Git repo (because
+   `data/` and `public/images/` are gitignored), set `GALLERY_SYNC_SOURCE`,
+   `GALLERY_SYNC_DATA_DIR`, and/or `GALLERY_SYNC_IMAGES_DIR` so the deploy
+   script can sync the latest persisted gallery data before rebuilding.
+3. Build command: `npm install && npm run build`
+4. Start command: `node server/index.js`
+5. **Persistent storage**: most platforms wipe the filesystem on each
    deploy. Mount a persistent disk and point both `data/` and
    `public/images/` at it (or use object storage like S3 with a small
    adapter) so uploads and config edits survive redeploys.

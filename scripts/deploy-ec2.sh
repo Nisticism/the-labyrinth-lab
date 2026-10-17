@@ -96,6 +96,13 @@ git fetch --all --tags
 git checkout "$BRANCH"
 git pull --ff-only "$REMOTE" "$BRANCH"
 
+log "Syncing persisted gallery data"
+if [[ -n "${GALLERY_SYNC_SOURCE:-}" || -n "${GALLERY_SYNC_DATA_DIR:-}" || -n "${GALLERY_SYNC_IMAGES_DIR:-}" ]]; then
+  bash "$SCRIPT_DIR/sync-persistent-gallery.sh"
+else
+  echo "No gallery sync source configured; skipping persisted gallery sync."
+fi
+
 log "Ensuring npm is current for this Node version"
 NODE_MAJOR="$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo "0")"
 CURRENT_NPM_MAJOR="$(npm -v 2>/dev/null | cut -d. -f1 || echo "0")"
