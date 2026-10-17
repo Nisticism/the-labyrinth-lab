@@ -29,7 +29,11 @@ app.use(cors({ origin: corsOrigins, credentials: false }));
 app.use(express.json({ limit: '1mb' }));
 
 // Static: public/ (raw images and other public assets).
+// index:false so this does NOT serve the unbuilt public/index.html (which still
+// contains %PUBLIC_URL% placeholders) for "/". The built app and SPA fallback
+// below own "/" and serve build/index.html instead.
 app.use(express.static(path.join(ROOT, 'public'), {
+  index: false,
   maxAge: '7d',
   setHeaders: (res, file) => {
     if (file.endsWith('.html')) res.setHeader('Cache-Control', 'no-cache');
