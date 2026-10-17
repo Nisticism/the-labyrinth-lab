@@ -42,19 +42,6 @@ APP_SERVICE_NAME="${APP_SERVICE_NAME:-the-labyrinth-lab}"
 APP_USER="${APP_USER:-${USER:-ubuntu}}"
 SITE_DOMAIN="${SITE_DOMAIN:-${APP_DOMAIN:-the-ll.com}}"
 NGINX_SITE_CONF="${NGINX_SITE_CONF:-/etc/nginx/conf.d/the-ll.conf}"
-NGINX_DEFAULT_CONF="${NGINX_DEFAULT_CONF:-}"
-
-if [[ -z "$NGINX_DEFAULT_CONF" ]]; then
-  for candidate in \
-    /etc/nginx/conf.d/default.conf \
-    /etc/nginx/sites-enabled/default \
-    /etc/nginx/sites-available/default; do
-    if [[ -e "$candidate" ]]; then
-      NGINX_DEFAULT_CONF="$candidate"
-      break
-    fi
-  done
-fi
 
 if [[ "$(id -u)" -ne 0 ]]; then
   SUDO="sudo"
@@ -74,13 +61,6 @@ require_file() {
   fi
 }
 
-if [[ ! -d "$REPO_DIR/.git" ]]; then
-  echo "Repository not found at $REPO_DIR" >&2
-  exit 1
-fi
-
-require_file "$REPO_DIR/.env"
-
 action() {
   if [[ -n "$SUDO" ]]; then
     $SUDO "$@"
@@ -88,6 +68,13 @@ action() {
     "$@"
   fi
 }
+
+if [[ ! -d "$REPO_DIR/.git" ]]; then
+  echo "Repository not found at $REPO_DIR" >&2
+  exit 1
+fi
+
+require_file "$REPO_DIR/.env"
 
 cd "$REPO_DIR"
 
@@ -155,10 +142,13 @@ npm run build
 
 log "Ensuring nginx is installed"
 if ! command -v nginx >/dev/null 2>&1; then
-  if command -v yum >/dev/null 2>&1; then
-    action yum install -y nginx
+  if command -v apt-get >/dev/null 2>&1; then
+    action apt-get update -y
+    action apt-get install -y nginx
   elif command -v dnf >/dev/null 2>&1; then
     action dnf install -y nginx
+  elif command -v yum >/dev/null 2>&1; then
+    action yum install -y nginx
   else
     echo "Could not find a supported package manager to install nginx." >&2
     exit 1
@@ -195,125 +185,114 @@ action systemctl restart ${APP_SERVICE_NAME}
 log "Writing nginx reverse proxy config"
 CERT_PATH="/etc/letsencrypt/live/${SITE_DOMAIN}/fullchain.pem"
 KEY_PATH="/etc/letsencrypt/live/${SITE_DOMAIN}/privkey.pem"
-if [[ -f "$CERT_PATH" ]] && [[ -f "$KEY_PATH" ]]; then
-  SSL_BLOCK=$(cat <<EOF
+
+# Let's Encrypt stores certs under a root-only directory, so probe with elevated
+# privileges. Testing as the invoking user would silently fail and drop HTTPS.
+if action test -f "$CERT_PATH" && action test -f "$KEY_PATH"; then
+  HAVE_CERT=1
+  echo "TLS certificate found for ${SITE_DOMAIN}; enabling HTTPS."
+else
+  HAVE_CERT=0
+  echo "No TLS certificate found for ${SITE_DOMAIN}; serving HTTP only."
+fi
+
+APP_LOCATIONS=$(cat <<EOF
+    root ${REPO_DIR}/build;
+    index index.html;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:${PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location /images/ {
+        proxy_pass http://127.0.0.1:${PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location /faqs/ {
+        proxy_pass http://127.0.0.1:${PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location /static/ {
+        alias ${REPO_DIR}/build/static/;
+        expires 1y;
+        access_log off;
+    }
+
+    location / {
+        try_files \$uri \$uri/ /index.html;
+    }
+EOF
+)
+
+if [[ "$HAVE_CERT" == "1" ]]; then
+  cat > /tmp/the-ll-nginx.conf <<EOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name ${SITE_DOMAIN} www.${SITE_DOMAIN};
+    return 301 https://\$host\$request_uri;
+}
 
 server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    http2 on;
     server_name ${SITE_DOMAIN} www.${SITE_DOMAIN};
 
     ssl_certificate ${CERT_PATH};
     ssl_certificate_key ${KEY_PATH};
 
-    root ${REPO_DIR}/build;
-    index index.html;
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /images/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /faqs/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /static/ {
-        alias ${REPO_DIR}/build/static/;
-        expires 1y;
-        access_log off;
-    }
-
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
+${APP_LOCATIONS}
 }
 EOF
-)
 else
-  SSL_BLOCK=""
-fi
-
-cat > /tmp/the-ll-nginx.conf <<EOF
+  cat > /tmp/the-ll-nginx.conf <<EOF
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
     server_name ${SITE_DOMAIN} www.${SITE_DOMAIN};
 
-    if (\$host = "${SITE_DOMAIN}") {
-        return 301 https://\$host\$request_uri;
-    }
-
-    root ${REPO_DIR}/build;
-    index index.html;
-
-    location /api/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /images/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /faqs/ {
-        proxy_pass http://127.0.0.1:${PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    location /static/ {
-        alias ${REPO_DIR}/build/static/;
-        expires 1y;
-        access_log off;
-    }
-
-    location / {
-        try_files \$uri \$uri/ /index.html;
-    }
+${APP_LOCATIONS}
 }
-${SSL_BLOCK}
 EOF
-
-action install -d /etc/nginx/conf.d
-
-action cp /tmp/the-ll-nginx.conf "$NGINX_SITE_CONF"
-if [[ -n "$NGINX_DEFAULT_CONF" ]] && [[ -e "$NGINX_DEFAULT_CONF" ]]; then
-  if [[ -L "$NGINX_DEFAULT_CONF" ]] || [[ -f "$NGINX_DEFAULT_CONF" ]]; then
-    action rm -f "$NGINX_DEFAULT_CONF"
-  fi
 fi
 
+action install -d /etc/nginx/conf.d
+action cp /tmp/the-ll-nginx.conf "$NGINX_SITE_CONF"
+
+log "Disabling conflicting nginx server blocks for ${SITE_DOMAIN}"
+DOMAIN_RE="${SITE_DOMAIN//./\\.}"
+NGINX_SITE_CONF_REAL="$(readlink -f "$NGINX_SITE_CONF" 2>/dev/null || echo "$NGINX_SITE_CONF")"
+shopt -s nullglob
+for conf in /etc/nginx/conf.d/*.conf /etc/nginx/sites-enabled/*; do
+  conf_real="$(readlink -f "$conf" 2>/dev/null || echo "$conf")"
+  if [[ "$conf_real" == "$NGINX_SITE_CONF_REAL" ]]; then
+    continue
+  fi
+  if $SUDO grep -qE "server_name[^;]*${DOMAIN_RE}" "$conf" 2>/dev/null; then
+    ts="$(date +%Y%m%d%H%M%S)"
+    echo "Disabling conflicting nginx config: $conf"
+    action mv "$conf" "${conf}.disabled.${ts}"
+  fi
+done
+shopt -u nullglob
+
+# Remove the stock default site if present (it grabs the default_server slot).
 if [[ -L /etc/nginx/sites-enabled/default ]]; then
   action rm -f /etc/nginx/sites-enabled/default
 fi
@@ -323,12 +302,18 @@ action nginx -t
 action systemctl enable --now nginx
 action systemctl reload nginx
 
-log "Deployment complete"
-PUBLIC_HOST="${SITE_DOMAIN:-$(curl -fsSL --max-time 5 http://169.254.169.254/latest/meta-data/public-hostname 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}' || echo '')}"
-if [[ -n "$PUBLIC_HOST" ]]; then
-  echo "App: http://localhost:${PORT}"
-  echo "Public site: https://${PUBLIC_HOST}/"
+log "Verifying the app responds locally"
+if curl -fsS --max-time 10 "http://127.0.0.1:${PORT}/api/gallery" >/dev/null 2>&1; then
+  echo "App responded on http://127.0.0.1:${PORT}/api/gallery"
 else
-  echo "App: http://localhost:${PORT}"
-  echo "Public site: set this to your EC2 public DNS or ALB address."
+  echo "WARNING: app did not respond on http://127.0.0.1:${PORT}/api/gallery" >&2
+  echo "Check: sudo journalctl -u ${APP_SERVICE_NAME} -n 50 --no-pager" >&2
+fi
+
+log "Deployment complete"
+echo "App: http://localhost:${PORT}"
+if [[ "$HAVE_CERT" == "1" ]]; then
+  echo "Public site: https://${SITE_DOMAIN}/"
+else
+  echo "Public site: http://${SITE_DOMAIN}/ (no TLS cert found; run certbot to enable HTTPS)"
 fi
