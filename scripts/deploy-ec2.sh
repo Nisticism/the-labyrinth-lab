@@ -51,14 +51,36 @@ git fetch --all --tags
 git checkout "$BRANCH"
 git pull --ff-only "$REMOTE" "$BRANCH"
 
-log "Ensuring npm is current"
-CURRENT_NPM="$(npm --version 2>/dev/null || echo "0.0.0")"
-LATEST_NPM="$(npm view npm version 2>/dev/null || echo "$CURRENT_NPM")"
-if [[ "$CURRENT_NPM" != "$LATEST_NPM" ]]; then
-  echo "npm is outdated: $CURRENT_NPM -> $LATEST_NPM"
-  npm install -g "npm@$LATEST_NPM"
+log "Ensuring npm is current for this Node version"
+NODE_MAJOR="$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo "0")"
+CURRENT_NPM_MAJOR="$(npm -v 2>/dev/null | cut -d. -f1 || echo "0")"
+if (( NODE_MAJOR >= 22 )); then
+  TARGET_NPM_MAJOR="latest"
+elif (( NODE_MAJOR >= 18 )); then
+  TARGET_NPM_MAJOR="10"
+elif (( NODE_MAJOR >= 16 )); then
+  TARGET_NPM_MAJOR="8"
 else
-  echo "npm is already current: $CURRENT_NPM"
+  TARGET_NPM_MAJOR="6"
+fi
+
+if [[ "$TARGET_NPM_MAJOR" == "latest" ]]; then
+  CURRENT_NPM="$(npm --version 2>/dev/null || echo "0.0.0")"
+  LATEST_NPM="$(npm view npm version 2>/dev/null | tail -n 1 || echo "$CURRENT_NPM")"
+  if [[ "$CURRENT_NPM" != "$LATEST_NPM" ]]; then
+    echo "npm is outdated for Node ${NODE_MAJOR}: $CURRENT_NPM -> $LATEST_NPM"
+    npm install -g "npm@$LATEST_NPM"
+  else
+    echo "npm is already current for Node ${NODE_MAJOR}: $CURRENT_NPM"
+  fi
+else
+  if [[ "$CURRENT_NPM_MAJOR" != "$TARGET_NPM_MAJOR" ]]; then
+    echo "npm major mismatch for Node ${NODE_MAJOR}: current ${CURRENT_NPM_MAJOR} -> target ${TARGET_NPM_MAJOR}"
+    npm install -g "npm@${TARGET_NPM_MAJOR}"
+  else
+    CURRENT_NPM="$(npm --version 2>/dev/null || echo "0.0.0")"
+    echo "npm is already on the compatible major for Node ${NODE_MAJOR}: $CURRENT_NPM"
+  fi
 fi
 
 log "Installing dependencies"
