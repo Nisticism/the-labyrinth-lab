@@ -1,6 +1,6 @@
 .gallery-page {
   padding: 20px 40px;
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
 }
 
@@ -13,7 +13,7 @@
 .gallery-categories {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 0;
 }
 
 .gallery-status {
