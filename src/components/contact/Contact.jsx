@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './contact.css';
 
+const API_BASE = (process.env.REACT_APP_API_BASE || '').replace(/\/$/, '');
+
 function Contact() {
   const [status, setStatus] = useState('idle');
 
@@ -9,20 +11,34 @@ function Contact() {
     setStatus('sending');
     const form = e.target;
     const data = new FormData(form);
+    const payload = {
+      name: String(data.get('name') || '').trim(),
+      email: String(data.get('email') || '').trim(),
+      message: String(data.get('message') || '').trim(),
+    };
+
     try {
-      const res = await fetch('https://formsubmit.co/ajax/labyrinthlabs0@gmail.com', {
+      const res = await fetch(`${API_BASE}/api/contact`, {
         method: 'POST',
-        body: data,
-        headers: { Accept: 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(payload),
       });
+
+      const responseBody = await res.json().catch(() => ({}));
+
       if (res.ok) {
         setStatus('sent');
         form.reset();
       } else {
         setStatus('error');
+        console.error('[contact] submit failed:', responseBody?.error || res.statusText);
       }
-    } catch {
+    } catch (error) {
       setStatus('error');
+      console.error('[contact] network error:', error);
     }
   };
 

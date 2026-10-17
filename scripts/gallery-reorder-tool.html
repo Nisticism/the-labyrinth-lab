@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gallery Reorder Tool</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #101318;
+      --panel: #1a1f28;
+      --muted: #9ea8b8;
+      --text: #eef3fc;
+      --accent: #57b3ff;
+      --border: #2a3240;
+      --danger: #ff7b7b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .app {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+      min-height: 100vh;
+    }
+
+    h1, h2 {
+      margin: 0 0 10px;
+      line-height: 1.2;
+    }
+
+    p {
+      margin: 8px 0;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button, input[type="file"]::file-selector-button {
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: #232b37;
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    button:hover, input[type="file"]::file-selector-button:hover {
+      border-color: var(--accent);
+    }
+
+    button.primary {
+      background: #0f3d64;
+      border-color: #2f6797;
+    }
+
+    .layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1fr 2fr;
+      min-height: 0;
+    }
+
+    .list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+      overflow: auto;
+      max-height: 62vh;
+    }
+
+    .item {
+      border: 1px solid var(--border);
+      background: #222937;
+      border-radius: 10px;
+      padding: 10px;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .item.dragging {
+      opacity: 0.45;
+    }
+
+    .item.active {
+      border-color: var(--accent);
+      outline: 1px solid var(--accent);
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .small {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .danger {
+      color: var(--danger);
+    }
+
+    .status {
+      min-height: 1.2em;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .thumb {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #141922;
+      display: block;
+      cursor: zoom-in;
+    }
+
+    .thumb.small {
+      width: 44px;
+      height: 44px;
+      cursor: default;
+    }
+
+    .thumb.hidden {
+      visibility: hidden;
+    }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 10, 15, 0.82);
+      display: none;
+      place-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .lightbox.open {
+      display: grid;
+    }
+
+    .lightbox-inner {
+      max-width: min(92vw, 1300px);
+      max-height: 92vh;
+      display: grid;
+      gap: 10px;
+      justify-items: center;
+    }
+
+    .lightbox img {
+      max-width: 100%;
+      max-height: 82vh;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0f141d;
+    }
+
+    .lightbox-meta {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
+    }
+
+    .lightbox-close {
+      justify-self: end;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="panel">
+      <h1>Gallery Reorder Tool</h1>
+      <p>Load <code>data/gallery-config.json</code>, drag categories and image paths to reorder, then export the updated JSON.</p>
+      <p class="small">Tip: I can apply your exported JSON for you in code when you send it back.</p>
+    </section>
+
+    <section class="panel">
+      <div class="controls">
+        <input id="jsonFileInput" type="file" accept=".json,application/json">
+        <button id="clearStateButton" type="button">Clear saved state</button>
+        <button id="exportButton" type="button" class="primary">Download updated gallery-config.json</button>
+        <button id="copyButton" type="button">Copy JSON</button>
+      </div>
+      <p id="status" class="status small"></p>
+    </section>
+
+    <section class="layout">
+      <section class="panel">
+        <h2>Categories</h2>
+        <p class="small">Drag to reorder. Click a category to edit its image order.</p>
+        <ul id="categoryList" class="list" aria-label="Gallery categories"></ul>
+      </section>
+
+      <section class="panel">
+        <h2 id="imagesHeading">Images</h2>
+        <p class="small">Drag image rows to reorder the selected category.</p>
+        <ul id="imageList" class="list" aria-label="Category images"></ul>
+      </section>
+    </section>
+  </div>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true" role="dialog" aria-label="Image preview">
+    <div class="lightbox-inner">
+      <button id="lightboxCloseButton" class="lightbox-close" type="button">Close</button>
+      <img id="lightboxImage" alt="Gallery preview">
+      <div id="lightboxMeta" class="lightbox-meta"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = "gallery-reorder-tool-state-v1";
+      var appState = [];
+      var selectedCategoryIndex = -1;
+
+      var categoryListEl = document.getElementById("categoryList");
+      var imageListEl = document.getElementById("imageList");
+      var imagesHeadingEl = document.getElementById("imagesHeading");
+      var statusEl = document.getElementById("status");
+      var fileInputEl = document.getElementById("jsonFileInput");
+      var lightboxEl = document.getElementById("lightbox");
+      var lightboxImageEl = document.getElementById("lightboxImage");
+      var lightboxMetaEl = document.getElementById("lightboxMeta");
+      var lightboxCloseButtonEl = document.getElementById("lightboxCloseButton");
+
+      function cloneData(data) {
+        return JSON.parse(JSON.stringify(data));
+      }
+
+      function setStatus(message, isError) {
+        statusEl.textContent = message;
+        statusEl.classList.toggle("danger", Boolean(isError));
+      }
+
+      function parseGalleryConfig(jsonValue) {
+        if (!Array.isArray(jsonValue)) {
+          throw new Error("Expected gallery config to be an array.");
+        }
+
+        return jsonValue.map(function (category, index) {
+          if (!category || typeof category !== "object") {
+            throw new Error("Category at index " + index + " is not an object.");
+          }
+          if (typeof category.id !== "string" || !category.id.trim()) {
+            throw new Error("Category at index " + index + " is missing a string id.");
+          }
+          if (typeof category.title !== "string" || !category.title.trim()) {
+            throw new Error("Category at index " + index + " is missing a string title.");
+          }
+          if (!Array.isArray(category.images)) {
+            throw new Error("Category '" + category.id + "' has no images array.");
+          }
+
+          return {
+            id: category.id,
+            title: category.title,
+            images: category.images.map(function (image, imageIndex) {
+              if (typeof image !== "string") {
+                throw new Error(
+                  "Category '" + category.id + "' has a non-string image at index " + imageIndex + "."
+                );
+              }
+              return image;
+            })
+          };
+        });
+      }
+
+      function persistState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      }
+
+      function restoreState() {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+          return false;
+        }
+        try {
+          appState = parseGalleryConfig(JSON.parse(raw));
+          selectedCategoryIndex = appState.length > 0 ? 0 : -1;
+          render();
+          setStatus("Restored saved state from this browser.");
+          return true;
+        } catch (error) {
+          localStorage.removeItem(STORAGE_KEY);
+          setStatus("Saved state was invalid and was cleared.", true);
+          return false;
+        }
+      }
+
+      function loadState(newState, message) {
+        appState = cloneData(newState);
+        selectedCategoryIndex = appState.length > 0 ? 0 : -1;
+        render();
+        persistState();
+        setStatus(message || "Gallery loaded.");
+      }
+
+      function moveInArray(list, fromIndex, toIndex) {
+        if (fromIndex === toIndex) {
+          return;
+        }
+        var item = list.splice(fromIndex, 1)[0];
+        list.splice(toIndex, 0, item);
+      }
+
+      function attachDragHandlers(listEl, onMove) {
+        var draggedIndex = null;
+        var autoScrollFrame = null;
+        var autoScrollVelocity = 0;
+        var EDGE_SCROLL_ZONE_PX = 90;
+        var MAX_EDGE_SCROLL_PX_PER_FRAME = 34;
+
+        function stopAutoScroll() {
+          autoScrollVelocity = 0;
+          if (autoScrollFrame !== null) {
+            cancelAnimationFrame(autoScrollFrame);
+            autoScrollFrame = null;
+          }
+        }
+
+        function startAutoScroll() {
+          if (autoScrollFrame !== null) {
+            return;
+          }
+
+          function tick() {
+            if (draggedIndex === null || autoScrollVelocity === 0) {
+              autoScrollFrame = null;
+              return;
+            }
+
+            listEl.scrollTop += autoScrollVelocity;
+            autoScrollFrame = requestAnimationFrame(tick);
+          }
+
+          autoScrollFrame = requestAnimationFrame(tick);
+        }
+
+        function updateAutoScrollFromPointer(clientY) {
+          var rect = listEl.getBoundingClientRect();
+          var y = clientY - rect.top;
+          var height = rect.height;
+          var topZone = EDGE_SCROLL_ZONE_PX;
+          var bottomZoneStart = height - EDGE_SCROLL_ZONE_PX;
+
+          if (y < topZone) {
+            var topRatio = (topZone - y) / topZone;
+            autoScrollVelocity = -Math.max(4, Math.round(topRatio * MAX_EDGE_SCROLL_PX_PER_FRAME));
+            startAutoScroll();
+            return;
+          }
+
+          if (y > bottomZoneStart) {
+            var bottomRatio = (y - bottomZoneStart) / EDGE_SCROLL_ZONE_PX;
+            autoScrollVelocity = Math.max(4, Math.round(bottomRatio * MAX_EDGE_SCROLL_PX_PER_FRAME));
+            startAutoScroll();
+            return;
+          }
+
+          stopAutoScroll();
+        }
+
+        listEl.addEventListener("dragstart", function (event) {
+          var target = event.target.closest(".item");
+          if (!target) {
+            return;
+          }
+          draggedIndex = Number(target.dataset.index);
+          target.classList.add("dragging");
+          event.dataTransfer.effectAllowed = "move";
+        });
+
+        listEl.addEventListener("dragend", function (event) {
+          var target = event.target.closest(".item");
+          if (target) {
+            target.classList.remove("dragging");
+          }
+          stopAutoScroll();
+          draggedIndex = null;
+        });
+
+        listEl.addEventListener("dragover", function (event) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+          if (draggedIndex !== null) {
+            updateAutoScrollFromPointer(event.clientY);
+          }
+        });
+
+        listEl.addEventListener("drop", function (event) {
+          event.preventDefault();
+          var target = event.target.closest(".item");
+          stopAutoScroll();
+          if (!target || draggedIndex === null) {
+            return;
+          }
+          var dropIndex = Number(target.dataset.index);
+          if (Number.isNaN(dropIndex) || Number.isNaN(draggedIndex)) {
+            return;
+          }
+          onMove(draggedIndex, dropIndex);
+          draggedIndex = null;
+        });
+
+        listEl.addEventListener("dragleave", function (event) {
+          if (!listEl.contains(event.relatedTarget)) {
+            stopAutoScroll();
+          }
+        });
+
+        listEl.addEventListener("wheel", function (event) {
+          if (draggedIndex === null) {
+            return;
+          }
+          event.preventDefault();
+          listEl.scrollTop += event.deltaY;
+        }, { passive: false });
+      }
+
+      function renderCategories() {
+        categoryListEl.innerHTML = "";
+        appState.forEach(function (category, index) {
+          var li = document.createElement("li");
+          li.className = "item" + (index === selectedCategoryIndex ? " active" : "");
+          li.draggable = true;
+          li.dataset.index = String(index);
+          var firstImage = category.images[0] || "";
+          var thumb = firstImage
+            ? "<img class='thumb small' src='" + escapeHtml(resolveImageSrc(firstImage)) + "' alt='' loading='lazy'>"
+            : "<div class='thumb small hidden'></div>";
+          li.innerHTML =
+            "<div class='row'>" +
+              thumb +
+              "<div>" +
+                "<strong>" + escapeHtml(category.title) + "</strong>" +
+                "<div class='meta'>" + escapeHtml(category.id) + " • " + category.images.length + " image(s)</div>" +
+              "</div>" +
+            "</div>";
+          li.addEventListener("click", function () {
+            selectedCategoryIndex = index;
+            render();
+          });
+
+          var categoryThumbEl = li.querySelector(".thumb.small");
+          if (categoryThumbEl) {
+            categoryThumbEl.addEventListener("error", function () {
+              categoryThumbEl.classList.add("hidden");
+            });
+          }
+
+          categoryListEl.appendChild(li);
+        });
+      }
+
+      function renderImages() {
+        imageListEl.innerHTML = "";
+        if (selectedCategoryIndex < 0 || selectedCategoryIndex >= appState.length) {
+          imagesHeadingEl.textContent = "Images";
+          return;
+        }
+
+        var category = appState[selectedCategoryIndex];
+        imagesHeadingEl.textContent = "Images: " + category.title;
+        category.images.forEach(function (imagePath, index) {
+          var li = document.createElement("li");
+          li.className = "item";
+          li.draggable = true;
+          li.dataset.index = String(index);
+          var imageSrc = resolveImageSrc(imagePath);
+          li.innerHTML =
+            "<div class='row'>" +
+              "<img class='thumb' src='" + escapeHtml(imageSrc) + "' alt='" + escapeHtml(imagePath) + "' loading='lazy'>" +
+              "<div><strong>" + (index + 1) + ".</strong> " + escapeHtml(imagePath) + "</div>" +
+            "</div>";
+
+          var thumbEl = li.querySelector(".thumb");
+          thumbEl.addEventListener("click", function (event) {
+            event.stopPropagation();
+            openLightbox(imagePath, imageSrc);
+          });
+
+          thumbEl.addEventListener("error", function () {
+            thumbEl.classList.add("hidden");
+          });
+
+          imageListEl.appendChild(li);
+        });
+      }
+
+      function render() {
+        renderCategories();
+        renderImages();
+      }
+
+      function escapeHtml(value) {
+        return value
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function resolveImageSrc(imagePath) {
+        if (location.protocol === "file:" && imagePath.indexOf("/images/") === 0) {
+          return "../public" + imagePath;
+        }
+        return imagePath;
+      }
+
+      function openLightbox(imagePath, imageSrc) {
+        lightboxImageEl.src = imageSrc;
+        lightboxImageEl.alt = imagePath;
+        lightboxMetaEl.textContent = imagePath;
+        lightboxEl.classList.add("open");
+        lightboxEl.setAttribute("aria-hidden", "false");
+      }
+
+      function closeLightbox() {
+        lightboxEl.classList.remove("open");
+        lightboxEl.setAttribute("aria-hidden", "true");
+        lightboxImageEl.src = "";
+        lightboxMetaEl.textContent = "";
+      }
+
+      function downloadText(filename, text) {
+        var blob = new Blob([text], { type: "application/json;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      }
+
+      fileInputEl.addEventListener("change", function (event) {
+        var file = event.target.files && event.target.files[0];
+        if (!file) {
+          return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function () {
+          try {
+            var parsed = parseGalleryConfig(JSON.parse(String(reader.result)));
+            loadState(parsed, "Loaded " + file.name + ".");
+          } catch (error) {
+            setStatus("Could not load file: " + error.message, true);
+          }
+        };
+        reader.onerror = function () {
+          setStatus("Could not read file.", true);
+        };
+        reader.readAsText(file);
+      });
+
+      document.getElementById("clearStateButton").addEventListener("click", function () {
+        localStorage.removeItem(STORAGE_KEY);
+        setStatus("Saved browser state cleared.");
+      });
+
+      document.getElementById("exportButton").addEventListener("click", function () {
+        if (appState.length === 0) {
+          setStatus("Nothing to export. Load a gallery config first.", true);
+          return;
+        }
+        downloadText("gallery-config.json", JSON.stringify(appState, null, 2) + "\n");
+        setStatus("Downloaded updated gallery-config.json.");
+      });
+
+      document.getElementById("copyButton").addEventListener("click", function () {
+        if (appState.length === 0) {
+          setStatus("Nothing to copy. Load a gallery config first.", true);
+          return;
+        }
+
+        var text = JSON.stringify(appState, null, 2);
+        navigator.clipboard.writeText(text).then(
+          function () {
+            setStatus("Copied updated JSON to clipboard.");
+          },
+          function () {
+            setStatus("Clipboard copy failed. Use the download button instead.", true);
+          }
+        );
+      });
+
+      lightboxCloseButtonEl.addEventListener("click", function () {
+        closeLightbox();
+      });
+
+      lightboxEl.addEventListener("click", function (event) {
+        if (event.target === lightboxEl) {
+          closeLightbox();
+        }
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && lightboxEl.classList.contains("open")) {
+          closeLightbox();
+        }
+      });
+
+      attachDragHandlers(categoryListEl, function (fromIndex, toIndex) {
+        moveInArray(appState, fromIndex, toIndex);
+        if (selectedCategoryIndex === fromIndex) {
+          selectedCategoryIndex = toIndex;
+        } else if (fromIndex < selectedCategoryIndex && toIndex >= selectedCategoryIndex) {
+          selectedCategoryIndex -= 1;
+        } else if (fromIndex > selectedCategoryIndex && toIndex <= selectedCategoryIndex) {
+          selectedCategoryIndex += 1;
+        }
+        render();
+        persistState();
+      });
+
+      attachDragHandlers(imageListEl, function (fromIndex, toIndex) {
+        var category = appState[selectedCategoryIndex];
+        if (!category) {
+          return;
+        }
+        moveInArray(category.images, fromIndex, toIndex);
+        render();
+        persistState();
+      });
+
+      if (!restoreState()) {
+        appState = [];
+        selectedCategoryIndex = -1;
+        render();
+        setStatus("Load data/gallery-config.json to begin.");
+      }
+    })();
+  </script>
+</body>
+</html>

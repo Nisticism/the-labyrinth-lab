@@ -15,3 +15,14 @@
   flex-direction: column;
   gap: 30px;
 }
+
+.gallery-status {
+  text-align: center;
+  color: var(--dark-blue-text);
+  margin: 40px 0;
+  font-size: 1.1rem;
+}
+
+.gallery-status--error {
+  color: #b00020;
+}
