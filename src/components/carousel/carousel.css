@@ -35,9 +35,9 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  border-radius: 8px;
   width: 100%;
   gap: 12px;
+  align-items: center;
 }
 
 .carousel-track::-webkit-scrollbar {
@@ -45,25 +45,22 @@
 }
 
 .carousel-slide {
-  flex: 0 0 calc((100% - 24px) / 3);
+  flex: 0 0 auto;
+  min-width: 150px;
+  height: 300px;
   scroll-snap-align: start;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--nav-background);
-  border-radius: 10px;
-  min-height: 250px;
-  padding: 8px;
-  box-sizing: border-box;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .carousel-slide img {
-  max-width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-  border-radius: 8px;
+  height: 100%;
+  width: auto;
+  object-fit: cover;
+  border-radius: 4px;
   cursor: pointer;
+  display: block;
 }
 
 .carousel-btn {
@@ -104,17 +101,14 @@
 
 @media screen and (max-width: 900px) {
   .carousel-slide {
-    flex: 0 0 calc((100% - 12px) / 2);
+    height: 250px;
   }
 }
 
 @media screen and (max-width: 550px) {
   .carousel-slide {
-    flex: 0 0 100%;
-  }
-
-  .carousel-slide img {
-    max-height: 300px;
+    height: 200px;
+    min-width: 120px;
   }
 
   .carousel-btn {
@@ -140,8 +134,68 @@
   max-width: 90vw;
   max-height: 90vh;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: default;
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 40px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 1001;
+}
+
+.lightbox-nav:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.lightbox-nav-left {
+  left: 24px;
+}
+
+.lightbox-nav-right {
+  right: 24px;
+}
+
+.lightbox-count {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  z-index: 1001;
+}
+
+@media screen and (max-width: 550px) {
+  .lightbox-nav {
+    width: 40px;
+    height: 40px;
+    font-size: 30px;
+  }
+
+  .lightbox-nav-left {
+    left: 8px;
+  }
+
+  .lightbox-nav-right {
+    right: 8px;
+  }
 }
 
 .lightbox-close {
