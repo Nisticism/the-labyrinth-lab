@@ -1,10 +1,16 @@
 import React from 'react';
+import Seo from '../seo/Seo';
 import './markets.css';
 
 function Markets() {
   return (
     <div className="markets-page">
-      <h2 className="markets-heading">Markets &amp; Events</h2>
+      <Seo
+        title="Markets & Events"
+        path="/markets"
+        description="Find The Labyrinth Lab at craft markets and events around San Antonio and Austin, TX, or shop handcrafted woodworking online on Etsy."
+      />
+      <h1 className="markets-heading">Markets &amp; Events</h1>
 
       <div className="markets-section">
         <h3 className="markets-subheading">Upcoming Markets</h3>

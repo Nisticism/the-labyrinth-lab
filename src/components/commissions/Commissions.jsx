@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Seo from '../seo/Seo';
 import './commissions.css';
 
 const PREFIX = process.env.PUBLIC_URL + '/images';
@@ -12,7 +13,12 @@ const commPhoto3 = PREFIX + '/commission-work/PXL_20241227_230132227.jpg';
 function Commissions() {
   return (
     <div className="commissions-page">
-      <h2 className="comm-heading">Custom Commissions</h2>
+      <Seo
+        title="Custom Commissions"
+        path="/commissions"
+        description="Commission a one-of-a-kind handcrafted wood piece from The Labyrinth Lab — chess boards, labyrinths, furniture, and more. Start your custom project today."
+      />
+      <h1 className="comm-heading">Custom Commissions</h1>
       <div className="comm-section">
         <p className="comm-text">
           Every piece from The Labyrinth Lab starts with a conversation. Whether you have a detailed vision

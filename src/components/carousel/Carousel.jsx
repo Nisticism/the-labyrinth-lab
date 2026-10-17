@@ -103,7 +103,7 @@ function Carousel({ images, title }) {
             <div className="carousel-slide" key={i}>
               <img
                 src={src}
-                alt={`${title} ${i + 1}`}
+                alt={`${title} — handcrafted woodwork by The Labyrinth Lab (${i + 1} of ${images.length})`}
                 loading="lazy"
                 onLoad={updateScrollState}
                 onClick={() => setLightboxIndex(i)}

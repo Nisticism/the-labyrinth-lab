@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Carousel from '../carousel/Carousel';
+import Seo from '../seo/Seo';
 import { fetchGalleryData } from '../../helpers/galleryData';
 import './gallery.css';
 
@@ -25,7 +26,12 @@ function Gallery() {
 
   return (
     <div className="gallery-page">
-      <h2 className="gallery-heading">Gallery</h2>
+      <Seo
+        title="Gallery"
+        path="/gallery"
+        description="Browse the gallery of handcrafted woodworking by The Labyrinth Lab — labyrinths, chess boards, charcuterie boards, furniture, pens, tops, and more."
+      />
+      <h1 className="gallery-heading">Gallery</h1>
       {status === 'loading' && (
         <p className="gallery-status">Loading gallery&hellip;</p>
       )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '../../components';
+import Seo from '../seo/Seo';
 import './home.css';
 
 const hero1 = process.env.PUBLIC_URL + '/images/thomas-moralez/OTM-1.jpg';
@@ -9,9 +10,13 @@ const hero2 = process.env.PUBLIC_URL + '/images/thomas-moralez/OTM-5.jpg';
 function Home() {
   return (
     <div>
+      <Seo
+        path="/"
+        description="Custom handcrafted woodworking in San Antonio, TX. Labyrinths, chess boards, charcuterie boards, hand-turned pens, furniture, and custom commissions by The Labyrinth Lab."
+      />
       <Header />
       <div className="home-content">
-        <h2 className="home-section-heading">Handcrafted Woodworking</h2>
+        <h1 className="home-section-heading">Handcrafted Woodworking</h1>
         <div className="home-section">
           <span className="home-text">
             Welcome to The Labyrinth Lab — a custom woodworking studio specializing in one-of-a-kind,

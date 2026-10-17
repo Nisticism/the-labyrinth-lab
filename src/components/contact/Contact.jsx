@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Seo from '../seo/Seo';
 import './contact.css';
 
 const API_BASE = (process.env.REACT_APP_API_BASE || '').replace(/\/$/, '');
@@ -44,8 +45,13 @@ function Contact() {
 
   return (
     <div className="contact-page">
+      <Seo
+        title="Contact"
+        path="/contact"
+        description="Get in touch with The Labyrinth Lab to discuss a custom woodworking commission, ask a question, or say hello."
+      />
       <div className="contact-card">
-        <h2 className="contact-heading">Get In Touch</h2>
+        <h1 className="contact-heading">Get In Touch</h1>
         <p className="contact-subtext">
           Have a question, want to discuss a custom piece, or just want to say hello?
           Fill out the form below and I'll get back to you as soon as I can.
