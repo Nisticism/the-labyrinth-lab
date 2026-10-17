@@ -4,12 +4,36 @@ set -Eeuo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="${REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 
-if [[ -f "$REPO_DIR/.env" ]]; then
-  set -a
-  # shellcheck disable=SC1091
-  . "$REPO_DIR/.env"
-  set +a
-fi
+load_dotenv() {
+  local env_file="$1"
+  if [[ ! -f "$env_file" ]]; then
+    return 0
+  fi
+
+  while IFS='=' read -r key value; do
+    [[ -z "$key" ]] && continue
+    [[ "$key" =~ ^[[:space:]]*# ]] && continue
+    key="${key%%[[:space:]]*}"
+    if [[ -z "$key" ]]; then
+      continue
+    fi
+
+    value="${value%$'\r'}"
+    value="${value#${value%%[![:space:]]*}}"
+    value="${value%${value##*[![:space:]]}}"
+
+    if [[ "$value" == \"*\" && "$value" == *\" ]]; then
+      value="${value:1:${#value}-2}"
+    elif [[ "$value" == \'*\' && "$value" == *\' ]]; then
+      value="${value:1:${#value}-2}"
+    fi
+
+    printf -v "$key" '%s' "$value"
+    export "$key"
+  done < "$env_file"
+}
+
+load_dotenv "$REPO_DIR/.env"
 
 REMOTE="${REMOTE:-origin}"
 BRANCH="${BRANCH:-master}"
